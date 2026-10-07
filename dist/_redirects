@@ -1,0 +1,3 @@
+# SPA fallback: any path that isn't a real file is served the app shell so
+# client-side routes (e.g. /sites/:id/capture) work on hard refresh / deep link.
+/*    /index.html    200
