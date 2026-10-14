@@ -19,7 +19,7 @@ export function SitesScreen() {
     <Page
       topBar={
         <TopBar
-          title="Site Collect"
+          title="Site Collection"
           subtitle={settings.personName ? `You: ${settings.personName}` : 'Set your name in Settings'}
           right={
             <Link to="/settings" aria-label="Settings">
