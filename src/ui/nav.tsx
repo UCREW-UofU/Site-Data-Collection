@@ -5,7 +5,6 @@ import {
   ChevronLeftIcon,
   ExportIcon,
   GridIcon,
-  SettingsIcon,
   TagIcon,
 } from './icons'
 
@@ -64,10 +63,6 @@ export function BottomNav({ siteId }: { siteId: string }) {
         <NavLink to={`/sites/${siteId}/browse`} className={tabCls}>
           <GridIcon width={22} height={22} />
           Photos
-        </NavLink>
-        <NavLink to={`/sites/${siteId}/setup`} className={tabCls}>
-          <SettingsIcon width={22} height={22} />
-          Setup
         </NavLink>
         <NavLink to={`/sites/${siteId}/export`} className={tabCls}>
           <ExportIcon width={22} height={22} />
