@@ -14,11 +14,15 @@ fixes that with **systems and observations**:
   Compressed Air, Production, Misc (+ any a device adds). Each device toggles
   the ones its site has; the built-in seven auto-seed identically everywhere,
   so no pre-visit syncing is needed.
-- An **observation** is one thing you document: a name ("Chiller 1"), a note
-  ("equipment purpose and observations"), and one or more photos (wide shot +
+- An **observation** is one thing you document: a name ("Chiller 1"), an optional location
+  ("Mechanical Room 2"), a note ("equipment purpose and observations"), and one or more photos (wide shot +
   nameplate, say). It's filed under a system.
 
-At merge, every team member's observations group by `System → Observation`, so
+At merge, observations group by system, equipment name, and location. Same names
+at different locations stay separate; blank locations remain blank. Location
+is shared by all photos in an entry and can be edited later. Older v2 bundles
+without location still work. Use this updated app for both capture and merging;
+older merge versions do not understand location. For entries without a location,
 `Cooling/Chiller 1/` holds everyone's photos of that chiller with the combined
 notes — and the lead gives the assessment its real name at that point, in the
 Merge tool, regardless of what any individual phone called its site.
@@ -66,3 +70,11 @@ In dev, `window.sc` exposes `seed()` / `wipe()` / the Dexie handle for quick tes
 
 Live at **https://site-collect.pages.dev** (Cloudflare Pages). Run `npm run deploy`
 to ship a new build. See [`DEPLOY.md`](DEPLOY.md) for CI auto-deploy setup.
+
+## Optional equipment location
+
+Location is stored locally with the observation and travels in each exported
+`.sitecollect.zip`, including bundles sent by email. The merged `index.xlsx`
+contains an Equipment sheet with a Location column and a Location row beside
+the photos on each system sheet. Blank values remain blank. With a location,
+photo folders and filenames include it. No database reset is needed.

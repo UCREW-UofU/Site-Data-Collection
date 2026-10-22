@@ -1,0 +1,86 @@
+OPTIONAL EQUIPMENT LOCATION — LOCAL TEST COPY
+
+WHAT CHANGED
+- Location (optional) appears below Name when creating and editing an observation.
+- One equipment entry can contain several photos; they share its name and location.
+- Location appears in the system and photo lists.
+- It travels with the observation in exported bundles, including emailed bundles.
+- Merging groups by system, equipment name and location. Case and extra spaces in
+  locations are ignored for matching. A blank location does not match a known one.
+- Old v2 bundles and existing records without location remain supported.
+- The merged index.xlsx has an Equipment tab with a Location column, plus a
+  Location row in each equipment section on the existing system tabs.
+- Populated locations appear in exported photo folders and filenames.
+- Distinct locations that sanitize to the same folder name receive unique suffixes.
+- No dependencies, hosting settings or database schema were changed.
+
+RUN A SEPARATE LOCAL COPY ON WINDOWS
+1. Keep the original project folder and ZIP.
+2. Extract Site-Data-Collection-location.zip into Downloads. The ZIP has no extra
+   outer project folder. Open the extracted folder containing package.json.
+3. Open Command Prompt in that folder. With the default extraction location:
+   cd /d "%USERPROFILE%\Downloads\Site-Data-Collection-location"
+4. Run each command separately. Stop and share the error if any command fails:
+   npm ci
+   npm test
+   npm run build
+   npm run dev -- --port 5174 --strictPort
+5. Open http://localhost:5174 and leave the terminal running.
+   Port 5174 uses separate browser storage from the original localhost:5173 copy.
+   It will initially have no sites or photos. Create a sample site.
+6. For a production-build/offline check after the above, stop the dev server
+   with Ctrl+C, then run:
+   npm run preview -- --port 4174 --strictPort
+   Open http://localhost:4174. This is another separate browser storage location.
+
+MANUAL ACCEPTANCE CHECK
+- Add an observation named Pump 1 with location Mechanical Room 2 and two photos.
+- Save, reload the page, reopen it, and verify the location is still present.
+- Edit only Location to Roof, save, reload and verify it changed.
+- Clear Location, save, reload and verify it stays blank.
+- Add three entries named Pump 1: Roof, Basement, and blank. All must save.
+- Export the test site's bundle. In the updated app's Merge team bundles screen,
+  choose that bundle, name the assessment and generate the merged ZIP.
+- Extract the merged ZIP and open index.xlsx. Confirm the Equipment tab's Location
+  column, each system sheet's Location row, and the correct photos for each entry.
+- Confirm Roof and Basement entries remain separate, and blank cells stay blank.
+- If available, merge an older v2 bundle; its locations should remain blank.
+- For offline testing, first load the production preview online, then disconnect
+  and try saving and reopening a test entry with a location.
+- Actual phone camera and email-to-lead require separate device/hosted testing;
+  the local Vite server does not run the Cloudflare email function.
+
+CHECKS COMPLETED HERE
+The dependency registry was blocked in the editing session, and no browser
+binary was installed. Therefore npm test, full TypeScript checking, the Vite
+production build, and browser/UI/offline tests have NOT been run here.
+
+24 source tests passed through an isolated Node assertion adapter, including
+existing grouping/filename tests and six new location regression tests. An
+additional eight executable export checks passed: bundle ZIP serialization and
+parsing, merging, older/blank location compatibility, filename collision
+handling, Excel Location values, photo counts, final ZIP/report content, and
+reserved worksheet naming. These used Node type stripping, existing bundled
+ExcelJS and local JSZip; they are not a substitute for the full project checks.
+Bundle storage queries were supplied fixture data. Actual IndexedDB persistence,
+UI interaction and image embedding were not exercised. No build output is
+included in this source ZIP; npm run build creates the updated dist folder.
+
+GITHUB UPLOAD — AFTER LOCAL CHECKS AND REVIEW
+1. Use the separate Site-Data-Collection-location-changes.zip download.
+2. Extract it; it contains only changed source files and documentation.
+3. On GitHub, create a branch named add-photo-location from the current main.
+4. Select Add file > Upload files on that new branch.
+5. Drag the CONTENTS of the extracted changes package into the upload area.
+   Preserve the src folders. Do not upload the ZIP or its enclosing folder.
+6. Commit with message: Add optional equipment location.
+7. Create a pull request from add-photo-location to main; review Files changed.
+8. Merge only after local tests and team review. If main changed since the
+   original ZIP was downloaded, reconcile those changes before merging.
+9. Confirm the live hosting setup before deployment. DEPLOY.md refers to a
+   different repository, so GitHub upload is not confirmed to publish the site.
+10. Build from the updated source before deployment; do not deploy the old dist
+    folder from the original download. Do not upload node_modules to GitHub.
+
+Use the updated version for both capture and merging. The old merge app does
+not understand locations and can combine equipment from different locations.

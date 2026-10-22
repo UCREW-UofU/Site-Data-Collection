@@ -46,6 +46,9 @@ export interface Observation {
   systemName: string
   /** Required — e.g. "Chiller 1", "CHW Pump 2". */
   name: string
+  /** Optional equipment location, shared by all photos in this observation.
+   * Older records and bundles may omit it. */
+  location?: string
   note: string
   capturedBy: string
   deviceId: string

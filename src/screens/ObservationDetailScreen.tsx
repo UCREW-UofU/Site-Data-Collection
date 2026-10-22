@@ -27,6 +27,7 @@ export function ObservationDetailScreen() {
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState('')
+  const [location, setLocation] = useState('')
   const [note, setNote] = useState('')
   const [systemId, setSystemId] = useState('')
   const [loaded, setLoaded] = useState(false)
@@ -36,6 +37,7 @@ export function ObservationDetailScreen() {
   useEffect(() => {
     if (observation && !loaded) {
       setName(observation.name)
+      setLocation(observation.location ?? '')
       setNote(observation.note)
       setSystemId(observation.systemId)
       setLoaded(true)
@@ -59,6 +61,7 @@ export function ObservationDetailScreen() {
 
   const dirty =
     name !== observation.name ||
+    location !== (observation.location ?? '') ||
     note !== observation.note ||
     systemId !== observation.systemId
 
@@ -95,7 +98,7 @@ export function ObservationDetailScreen() {
     if (!name.trim()) return
     setBusy(true)
     try {
-      await updateObservation(observationId, { name: name.trim(), note: note.trim(), systemId })
+      await updateObservation(observationId, { name: name.trim(), location, note: note.trim(), systemId })
       toast.show('Saved')
       navigate(-1)
     } finally {
@@ -187,6 +190,13 @@ export function ObservationDetailScreen() {
           label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="Location (optional)"
+          hint="Where this equipment is located. Applies to all photos in this entry."
+          placeholder="e.g. Mechanical Room 2 or Roof, north side"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
         />
         <TextArea
           label="Notes"

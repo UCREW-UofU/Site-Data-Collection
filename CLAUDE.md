@@ -23,7 +23,7 @@ $env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Env
 - **System** = a high-level category (Airside, Cooling, Heating, Controls,
   Compressed Air, Production, Misc + custom). Leads toggle each `active`.
   Defaults seeded by `repo.ensureDefaultSystems` (also the v1→v2 migration path).
-- **Observation** = one documented thing: a required `name` + a `note` + one or
+- **Observation** = one documented thing: a required `name` + optional `location` + a `note` + one or
   more **Photos**, all under one system. This is the unit that groups at export.
 - **Photo** = just image/thumb/original + exif + order. No per-photo metadata
   (kinds/descriptors/nameplate were removed — "simplest version" per the user).
@@ -50,14 +50,15 @@ overriding whatever individual bundles were locally called.
 ## Consolidation
 
 - **Group key is the normalized system name, then normalized observation name**
-  — `src/lib/systems.ts` (`normalizeSystemName`, `groupBySystem`, `applyRenameRules`).
-  No fuzzy matching, no photo de-dup. Same-named observations from different people
+  and the trimmed, case-insensitive location — `src/lib/merge.ts` and
+  `src/lib/systems.ts`. A missing or blank location never matches a known one.
+  No fuzzy matching, no photo de-dup. Observations with the same name and location from different people
   merge into ONE folder with combined `— name: note` text.
 - Client UUIDs everywhere (`src/lib/id.ts`).
 - Bundle = ZIP (`src/lib/bundle.ts` v2, has `observations[]`). Merge is in-memory
   desktop-only (`src/lib/merge.ts` → `src/lib/xlsx.ts`).
 - Export tree: `<SiteCode>/<System>/<Observation>/<System>__<Observation>__<seq>__<person>__<date>.jpg`
-- `index.xlsx` (ExcelJS, not write-excel-file) has a Summary tab + one tab per
+- `index.xlsx` (ExcelJS, not write-excel-file) has Summary and Equipment tabs (including a Location column) + one tab per
   system, each observation listed with its notes and photos **embedded inline**
   (downscaled ~1100px — see `downscaleBlob` in `src/lib/image.ts`).
 - Lazy-loaded routes keep jszip / exceljs out of the capture path (MergeScreen
@@ -96,3 +97,13 @@ update the Cloudflare Pages secret to match, or sends start failing with a 401
 
 Local Function testing: `npx wrangler pages dev dist --port 8788` (reads
 `.dev.vars`, gitignored, for fake provider keys during testing).
+
+## Location update (2026-10-22)
+
+`Observation.location?: string` is an optional, unindexed field. No IndexedDB
+schema change or data reset is needed; older v2 records/bundles treat missing
+location as blank. All photos inherit their observation location. Export bundles
+already serialize full observations, including this field. Use the updated app
+for merging so location participates in grouping. Located equipment includes
+location in photo folders/filenames; colliding sanitized folder names receive
+a suffix. Excel shows Location both in Equipment and on each system sheet.

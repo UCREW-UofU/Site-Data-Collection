@@ -159,3 +159,69 @@ describe('mergeBundles', () => {
     expect(mergeBundles([b1, b2]).siteConflicts).toEqual(['UU-2026-Other'])
   })
 })
+
+describe('optional equipment location', () => {
+  function at(id: string, location?: string) {
+    return bundle(id, [sys('Cooling')], [
+      { ...obs(`o-${id}`, 'Cooling', 'Pump 1', 'Alex'), location },
+    ], [photo(`p-${id}`, `o-${id}`)])
+  }
+
+  it('keeps identical equipment names at different locations separate', () => {
+    const result = mergeBundles([at('a', 'Room 101'), at('b', 'Roof')])
+    expect(result.observations).toHaveLength(2)
+    expect(result.observations.map((o) => o.location).sort()).toEqual(['Roof', 'Room 101'])
+    expect(new Set(result.photos.map((p) => `${p.folder}/${p.filename}`)).size).toBe(2)
+    for (const o of result.observations) {
+      expect(result.photos.filter((p) => p.folder === o.folder).map((p) => p.location)).toEqual([o.location])
+    }
+  })
+
+  it('combines matching locations despite case and extra whitespace', () => {
+    const result = mergeBundles([at('a', ' Room 101 '), at('b', 'room   101')])
+    expect(result.observations).toHaveLength(1)
+    expect(result.observations[0].location).toBe('Room 101')
+    expect(result.observations[0].photoCount).toBe(2)
+  })
+
+  it('supports older bundles and keeps blank locations separate from known ones', () => {
+    const result = mergeBundles([at('old'), at('blank', '  '), at('known', 'Roof')])
+    expect(result.observations).toHaveLength(2)
+    const blank = result.observations.find((o) => o.location === '')!
+    expect(blank.photoCount).toBe(2)
+    expect(blank.folder).toBe('Cooling/Pump 1')
+  })
+
+  it('does not overwrite photos when location folder names sanitize to the same text', () => {
+    const result = mergeBundles([at('a', 'Room/1'), at('b', 'Room:1'), at('c', 'Room1')])
+    expect(result.observations).toHaveLength(3)
+    expect(new Set(result.photos.map((p) => `${p.folder}/${p.filename}`.toLowerCase())).size).toBe(3)
+  })
+
+  it('preserves location when system rename rules combine categories', () => {
+    const a = at('a', 'Roof')
+    const b = at('b', 'Basement')
+    b.manifest.observations[0].systemName = 'Chillers'
+    const result = mergeBundles([a, b], [{ from: 'Chillers', to: 'Cooling' }])
+    expect(result.totals.systems).toBe(1)
+    expect(result.observations).toHaveLength(2)
+    expect(result.photos.map((p) => p.location).sort()).toEqual(['Basement', 'Roof'])
+  })
+
+  it('exports a Location column and separate location rows in Excel', async () => {
+    const { buildIndexWorkbook } = await import('./xlsx')
+    const { default: ExcelJS } = await import('exceljs')
+    const result = mergeBundles([at('a', 'Roof'), at('b', 'Basement'), at('old')])
+    const blob = await buildIndexWorkbook(result)
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(await blob.arrayBuffer())
+    const equipment = workbook.getWorksheet('Equipment')!
+    expect(equipment.getCell('C1').value).toBe('Location')
+    expect([2, 3, 4].map((r) => equipment.getCell(r, 3).value || '').sort()).toEqual(['', 'Basement', 'Roof'])
+    const locations: string[] = []
+    workbook.getWorksheet('Cooling')!.eachRow((r) => {
+      if (r.getCell(2).value === 'Location') locations.push(String(r.getCell(3).value || ''))
+    })
+    expect(locations.sort()).toEqual(['', 'Basement', 'Roof'])
+  })
+})
