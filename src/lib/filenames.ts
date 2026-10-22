@@ -23,13 +23,14 @@ export function dateStamp(iso?: string | null): string {
 export type PhotoNameParts = {
   system: string | null | undefined
   observation: string | null | undefined
+  location?: string | null
   seq: number
   person: string | null | undefined
   capturedAt: string | null | undefined
   ext?: string
 }
 
-/** `<System>__<Observation>__<01>__<person>__<yyyymmdd>.<ext>` */
+/** `<System>__<Observation>__[<Location>__]<01>__<person>__<yyyymmdd>.<ext>` */
 export function buildPhotoFilename(p: PhotoNameParts): string {
   const system = safeFolderName(p.system, 'Misc').replace(/\s+/g, '-')
   const obs = safeFolderName(p.observation, 'observation').replace(/\s+/g, '-')
@@ -37,7 +38,10 @@ export function buildPhotoFilename(p: PhotoNameParts): string {
   const person = safeToken(p.person, 'unknown')
   const date = dateStamp(p.capturedAt)
   const ext = (p.ext || 'jpg').replace(/^\./, '').toLowerCase()
-  return `${system}__${obs}__${seq}__${person}__${date}.${ext}`
+  const location = p.location?.trim()
+    ? `${safeFolderName(p.location, 'location').replace(/\s+/g, '-')}__`
+    : ''
+  return `${system}__${obs}__${location}${seq}__${person}__${date}.${ext}`
 }
 
 /** Guess a file extension from a blob's MIME type. */

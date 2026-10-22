@@ -62,6 +62,11 @@ export function SystemScreen() {
                       <div className="truncate text-sm font-semibold text-[var(--text)]">
                         {o.name}
                       </div>
+                      {o.location && (
+                        <div className="break-words text-xs text-[var(--text-2)]">
+                          Location: {o.location}
+                        </div>
+                      )}
                       {o.note && (
                         <div className="line-clamp-2 text-xs text-[var(--text-3)]">
                           {o.note}

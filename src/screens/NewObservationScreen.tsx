@@ -21,6 +21,7 @@ export function NewObservationScreen() {
 
   const [photos, setPhotos] = useState<CapturedPhoto[]>([])
   const [name, setName] = useState('')
+  const [location, setLocation] = useState('')
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [processing, setProcessing] = useState(false)
@@ -56,7 +57,7 @@ export function NewObservationScreen() {
     if (!name.trim() || photos.length === 0) return
     setBusy(true)
     try {
-      const obs = await createObservation({ siteId, systemId, name, note })
+      const obs = await createObservation({ siteId, systemId, name, location, note })
       for (const shot of photos) {
         await addPhoto({
           observationId: obs.id,
@@ -173,6 +174,13 @@ export function NewObservationScreen() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
+          />
+          <TextField
+            label="Location (optional)"
+            hint="Where this equipment is located. Applies to all photos in this entry."
+            placeholder="e.g. Mechanical Room 2 or Roof, north side"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
           />
           <TextArea
             label="Notes"

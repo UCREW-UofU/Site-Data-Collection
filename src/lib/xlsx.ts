@@ -14,7 +14,7 @@ const PX_PER_ROW = 15 // approx default Excel row height in px
 
 /** Excel worksheet names: ≤31 chars, no []:*?/\, unique, non-blank. */
 function sheetNamer() {
-  const used = new Set<string>()
+  const used = new Set<string>(['summary', 'equipment'])
   return (raw: string) => {
     let base = (raw || 'System').replace(/[[\]:*?/\\]/g, ' ').trim().slice(0, 28) || 'System'
     let name = base
@@ -59,12 +59,31 @@ export async function buildIndexWorkbook(result: MergeResult): Promise<Blob> {
     sum.addRow([u.system, u.observations, u.photos, u.contributors.join(', '), u.renamedTo ?? ''])
   }
 
+  /* A sortable index alongside the existing photo-rich system sheets. */
+  const equipment = wb.addWorksheet('Equipment')
+  equipment.columns = [
+    { header: 'System', key: 'system', width: 22 },
+    { header: 'Equipment name', key: 'name', width: 30 },
+    { header: 'Location', key: 'location', width: 36 },
+    { header: 'Notes', key: 'note', width: 55 },
+    { header: 'Photos', key: 'photoCount', width: 10 },
+    { header: 'Contributors', key: 'contributors', width: 28 },
+    { header: 'Photo folder', key: 'folder', width: 60 },
+  ]
+  equipment.getRow(1).font = { bold: true }
+  equipment.views = [{ state: 'frozen', ySplit: 1 }]
+  equipment.autoFilter = 'A1:G1'
+  for (const o of result.observations) {
+    equipment.addRow({ ...o, location: o.location || '', contributors: o.contributors.join(', ') })
+  }
+  equipment.eachRow((r) => { r.alignment = { wrapText: true, vertical: 'top' } })
+
   /* --------------------------- per-system tabs ------------------------ */
   const nameSheet = sheetNamer()
   // group observations + their photos by final system name
   const bySystem = new Map<
     string,
-    { system: string; obs: { name: string; note: string; contributors: string[]; photos: MergedPhoto[] }[] }
+    { system: string; obs: { name: string; location: string; note: string; contributors: string[]; photos: MergedPhoto[] }[] }
   >()
   for (const o of result.observations) {
     const key = normalizeSystemName(o.system)
@@ -75,13 +94,10 @@ export async function buildIndexWorkbook(result: MergeResult): Promise<Blob> {
     }
     g.obs.push({
       name: o.name,
+      location: o.location || '',
       note: o.note,
       contributors: o.contributors,
-      photos: result.photos.filter(
-        (p) =>
-          normalizeSystemName(p.system) === key &&
-          normalizeSystemName(p.observation) === normalizeSystemName(o.name),
-      ),
+      photos: result.photos.filter((p) => p.folder === o.folder),
     })
   }
 
@@ -110,6 +126,15 @@ export async function buildIndexWorkbook(result: MergeResult): Promise<Blob> {
       }`
       meta.font = { italic: true, color: { argb: 'FF6B7280' } }
       ws.mergeCells(row, 2, row, 12)
+      row++
+
+      ws.getCell(row, 2).value = 'Location'
+      ws.getCell(row, 2).font = { bold: true }
+      const locationCell = ws.getCell(row, 3)
+      locationCell.value = o.location
+      locationCell.alignment = { wrapText: true, vertical: 'top' }
+      ws.mergeCells(row, 3, row, 14)
+      ws.getRow(row).height = Math.min(160, 20 + Math.ceil(o.location.length / 60) * 15)
       row++
 
       ws.getCell(row, 2).value = 'Notes'

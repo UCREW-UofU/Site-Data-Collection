@@ -89,6 +89,11 @@ export function BrowseScreen() {
                       </div>
                       <div className="min-w-0 flex-1 py-0.5">
                         <div className="truncate text-sm font-medium">{o.name}</div>
+                        {o.location && (
+                          <div className="break-words text-xs text-[var(--text-2)]">
+                            Location: {o.location}
+                          </div>
+                        )}
                         {o.note && (
                           <div className="line-clamp-1 text-xs text-[var(--text-3)]">
                             {o.note}
