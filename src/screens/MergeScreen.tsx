@@ -138,6 +138,10 @@ export function MergeScreen() {
           <p className="mt-2 text-sm text-[var(--text-2)]">
             Drop every teammate's <span className="font-mono">.sitecollect.zip</span> here
           </p>
+          <p className="mt-2 text-sm text-[var(--text-2)]">
+            Select each teammate's original <span className="font-mono">.sitecollect.zip</span> file.
+            {' '}<strong>Do not unzip first.</strong> Extracted folders won't work.
+          </p>
           <Button variant="secondary" className="mt-3" onClick={() => fileRef.current?.click()}>
             Choose bundle files
           </Button>

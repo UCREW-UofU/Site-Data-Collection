@@ -148,6 +148,7 @@ export async function createObservation(input: {
   name: string
   location?: string
   note?: string
+  nameplate?: Observation['nameplate']
 }): Promise<Observation> {
   const s = await getSettings()
   const system = await db.systems.get(input.systemId)
@@ -159,6 +160,7 @@ export async function createObservation(input: {
     name: input.name.trim(),
     location: input.location?.trim() ?? '',
     note: input.note?.trim() ?? '',
+    nameplate: input.nameplate,
     capturedBy: s.personName || s.deviceLabel,
     deviceId: s.deviceId,
     createdAt: now(),
@@ -170,7 +172,7 @@ export async function createObservation(input: {
 
 export async function updateObservation(
   id: string,
-  patch: Partial<Pick<Observation, 'name' | 'location' | 'note' | 'systemId'>>,
+  patch: Partial<Pick<Observation, 'name' | 'location' | 'note' | 'systemId' | 'nameplate'>>,
 ): Promise<void> {
   const next: Partial<Observation> = { ...patch, updatedAt: now() }
   if (typeof patch.location === 'string') next.location = patch.location.trim()

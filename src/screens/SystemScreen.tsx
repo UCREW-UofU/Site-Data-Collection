@@ -33,13 +33,15 @@ export function SystemScreen() {
         className="mb-4 w-full"
         onClick={() => navigate(`/sites/${siteId}/systems/${systemId}/new`)}
       >
-        <CameraIcon width={20} height={20} /> Add observation
+        <CameraIcon width={20} height={20} /> Take photo
+      </Button>
+      <Button variant="secondary" size="lg" className="mb-4 w-full" onClick={() => navigate(`/sites/${siteId}/systems/${systemId}/new?manual=1`)}>
+        Add manually
       </Button>
 
       {observations === undefined ? null : observations.length === 0 ? (
         <EmptyState icon={<GridIcon width={40} height={40} />} title="No observations yet">
-          Tap “Add observation” to photograph a piece of equipment in this system
-          and describe what it does.
+          Take a photo or add equipment information manually.
         </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">

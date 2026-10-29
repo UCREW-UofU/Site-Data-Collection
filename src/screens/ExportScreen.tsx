@@ -156,7 +156,7 @@ export function ExportScreen() {
                 size="lg"
                 className="mt-2 w-full"
                 onClick={runEmail}
-                disabled={busy !== null || photos.length === 0}
+                disabled={busy !== null || observations.length === 0}
               >
                 <ShareIcon width={18} height={18} />
                 {busy === 'email' ? 'Sending…' : `Email to ${leadEmail}`}
@@ -172,12 +172,15 @@ export function ExportScreen() {
 
         {/* Manual export */}
         <div>
+          <p className="mb-3 text-sm text-[var(--text-2)]">
+            Send the ZIP file directly to your team lead. <strong>DO NOT UNZIP.</strong>
+          </p>
           <Button
             variant={leadEmail ? 'secondary' : 'primary'}
             size="lg"
             className="w-full"
             onClick={runExport}
-            disabled={busy !== null || photos.length === 0}
+            disabled={busy !== null || observations.length === 0}
           >
             <ExportIcon width={20} height={20} />
             {busy === 'export' ? 'Packaging…' : 'Export my bundle'}

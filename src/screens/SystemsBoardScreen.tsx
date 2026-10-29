@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useCountsBySystem, useObservations, useSite, useSystems } from '@/app/queries'
 import { useSettings } from '@/app/settings'
-import { createSystem } from '@/db/repo'
+import { createSystem, ensureDefaultSystems } from '@/db/repo'
 import { plural } from '@/lib/format'
 import { Banner, Button, Card, EmptyState, IconButton, TextField } from '@/ui/kit'
 import { Page, TopBar } from '@/ui/nav'
@@ -18,6 +18,9 @@ export function SystemsBoardScreen() {
   const { settings } = useSettings()
   const navigate = useNavigate()
   const [adding, setAdding] = useState(false)
+  useEffect(() => {
+    if (siteId) void ensureDefaultSystems(siteId)
+  }, [siteId])
 
   const active = (systems ?? []).filter((s) => s.active)
   const totalObs = observations?.length ?? 0

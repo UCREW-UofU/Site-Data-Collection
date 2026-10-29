@@ -15,6 +15,8 @@ import { Page, TopBar } from '@/ui/nav'
 import { Thumb } from '@/ui/Thumb'
 import { CameraIcon, TrashIcon, XIcon } from '@/ui/icons'
 import { useToast } from '@/ui/toast'
+import type { Nameplate } from '@/lib/equipment'
+import { NameplateFields } from '@/ui/NameplateFields'
 
 export function ObservationDetailScreen() {
   const { siteId = '', observationId = '' } = useParams()
@@ -29,6 +31,7 @@ export function ObservationDetailScreen() {
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
   const [note, setNote] = useState('')
+  const [nameplate, setNameplate] = useState<Nameplate | undefined>()
   const [systemId, setSystemId] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -39,6 +42,7 @@ export function ObservationDetailScreen() {
       setName(observation.name)
       setLocation(observation.location ?? '')
       setNote(observation.note)
+      setNameplate(observation.nameplate)
       setSystemId(observation.systemId)
       setLoaded(true)
     }
@@ -63,6 +67,7 @@ export function ObservationDetailScreen() {
     name !== observation.name ||
     location !== (observation.location ?? '') ||
     note !== observation.note ||
+    JSON.stringify(nameplate) !== JSON.stringify(observation.nameplate) ||
     systemId !== observation.systemId
 
   const onFiles = async (files: FileList) => {
@@ -98,7 +103,7 @@ export function ObservationDetailScreen() {
     if (!name.trim()) return
     setBusy(true)
     try {
-      await updateObservation(observationId, { name: name.trim(), location, note: note.trim(), systemId })
+      await updateObservation(observationId, { name: name.trim(), location, note: note.trim(), systemId, nameplate })
       toast.show('Saved')
       navigate(-1)
     } finally {
@@ -114,10 +119,6 @@ export function ObservationDetailScreen() {
   }
 
   const removePhoto = async (id: string) => {
-    if ((photos?.length ?? 0) <= 1) {
-      toast.show('An observation needs at least one photo', 'error')
-      return
-    }
     if (confirm('Delete this photo?')) await deletePhoto(id)
   }
 
@@ -198,6 +199,7 @@ export function ObservationDetailScreen() {
           value={location}
           onChange={(e) => setLocation(e.target.value)}
         />
+        {nameplate && <NameplateFields systemKey={systems.find((s) => s.id === systemId)?.defaultKey || ''} value={nameplate} onChange={setNameplate} />}
         <TextArea
           label="Notes"
           placeholder="Equipment purpose and observations"

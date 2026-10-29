@@ -100,7 +100,7 @@ export function SitesScreen() {
       <CreateSiteSheet
         open={creating}
         onClose={() => setCreating(false)}
-        onCreated={(id) => navigate(`/sites/${id}/setup`)}
+        onCreated={(id) => navigate(`/sites/${id}/board`)}
       />
     </Page>
   )

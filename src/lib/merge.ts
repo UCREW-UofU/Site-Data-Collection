@@ -10,6 +10,7 @@ import {
 } from './systems'
 import { parseBundle, type BundlePhoto, type ParsedBundle } from './bundle'
 import { buildIndexWorkbook } from './xlsx'
+import { observationText } from './equipment'
 
 export interface MergedPhoto {
   photo: BundlePhoto
@@ -192,7 +193,27 @@ export function mergeBundles(bundles: ParsedBundle[], rules: RenameRule[] = []):
       obsGroups.set(key, g)
     }
     g.rows.push(r)
-    if (r.obs?.note && !g.notes.has(r.capturedBy)) g.notes.set(r.capturedBy, r.obs.note)
+  }
+
+  // Include every observation, even without photos. Structured fields travel
+  // in bundles and are rendered as labeled text in the merged workbook.
+  for (const bundle of bundles) {
+    for (const observation of bundle.manifest.observations) {
+      const rawSystem = observation.systemName || bundle.manifest.systems.find((s) => s.id === observation.systemId)?.name || SYSTEM_UNASSIGNED
+      const system = applyRenameRules(rawSystem, rules) || SYSTEM_UNASSIGNED
+      const name = observation.name.trim() || 'Observation'
+      const location = (observation.location ?? '').trim()
+      const key = JSON.stringify([normalizeSystemName(system), normalizeSystemName(name), location.toLowerCase().replace(/\s+/g, ' ')])
+      let group = obsGroups.get(key)
+      if (!group) {
+        group = { system, observation: name, location, rows: [], notes: new Map() }
+        obsGroups.set(key, group)
+      }
+      const person = observation.capturedBy || bundle.manifest.device.person || bundle.manifest.device.label
+      const text = observationText(observation)
+      const previous = group.notes.get(person)
+      group.notes.set(person, previous && text && previous !== text ? `${previous}\n\n${text}` : previous || text)
+    }
   }
 
   const photos: MergedPhoto[] = []
@@ -224,7 +245,7 @@ export function mergeBundles(bundles: ParsedBundle[], rules: RenameRule[] = []):
         (a.photo.capturedAt || '').localeCompare(b.photo.capturedAt || ''),
     )
     let seq = 0
-    const contributors: string[] = []
+    const contributors: string[] = [...g.notes.keys()]
     for (const r of sorted) {
       seq++
       const ext = extForBlob(r.parsed.blobs.get(r.photo.id)!.image)

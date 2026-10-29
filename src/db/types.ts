@@ -51,6 +51,8 @@ export interface Observation {
   location?: string
   note: string
   capturedBy: string
+  /** Optional structured manual nameplate; older observations omit it. */
+  nameplate?: import('@/lib/equipment').Nameplate
   deviceId: string
   createdAt: string
   updatedAt: string

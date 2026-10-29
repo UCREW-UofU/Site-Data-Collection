@@ -143,7 +143,8 @@ export async function buildIndexWorkbook(result: MergeResult): Promise<Blob> {
       noteCell.value = o.note || '—'
       noteCell.alignment = { wrapText: true, vertical: 'top' }
       ws.mergeCells(row, 3, row, 14)
-      ws.getRow(row).height = Math.min(160, 20 + Math.ceil((o.note.length || 1) / 60) * 15)
+      const noteLines = (o.note || '—').split('\n').reduce((n, line) => n + Math.max(1, Math.ceil(line.length / 60)), 0)
+      ws.getRow(row).height = Math.min(409, 20 + noteLines * 15)
       row += 2
 
       // Embed the photos, 3 per image-row.

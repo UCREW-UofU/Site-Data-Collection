@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { BundleManifest, BundlePhoto, ParsedBundle } from './bundle'
 import type { Observation, Site, System } from '@/db/types'
 import { mergeBundles } from './merge'
+import { buildIndexWorkbook } from './xlsx'
+import ExcelJS from 'exceljs'
 
 const site: Site = {
   id: 'site-1',
@@ -83,6 +85,33 @@ function bundle(
 }
 
 describe('mergeBundles', () => {
+  it('retains photo-free nameplates, notes and attribution in the merged spreadsheet', async () => {
+    const manual = {
+      ...obs('manual', 'Cooling', 'Chiller 1', 'Alex', 'Unable to take a photo'),
+      nameplate: { equipmentType: 'Chiller', values: { Manufacturer: 'Example', 'Voltage (V)': '460' } },
+    }
+    const result = mergeBundles([bundle('alex', [sys('Cooling')], [manual], [])])
+    expect(result.totals).toMatchObject({ photos: 0, observations: 1, systems: 1 })
+    expect(result.observations[0]).toMatchObject({ contributors: ['Alex'], photoCount: 0 })
+    expect(result.observations[0].note).toContain('Voltage (V): 460')
+    const blob = await buildIndexWorkbook(result)
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(await blob.arrayBuffer())
+    expect(workbook.getWorksheet('Equipment')?.getCell('D2').value).toContain('Unable to take a photo')
+    expect(workbook.getWorksheet('Equipment')?.getCell('D2').value).toContain('Manufacturer: Example')
+    expect(workbook.getWorksheet('Cooling')).toBeDefined()
+  })
+
+  it('combines manual and photographed equipment without dropping manual-only contributors', () => {
+    const result = mergeBundles([
+      bundle('alex', [sys('Cooling')], [obs('manual', 'Cooling', 'Chiller 1', 'Alex', '460 V')], []),
+      bundle('sam', [sys('Cooling')], [obs('camera', 'Cooling', 'Chiller 1', 'Sam', 'Photo notes')], [photo('p1', 'camera')]),
+    ])
+    expect(result.totals.observations).toBe(1)
+    expect(result.observations[0].contributors).toEqual(['Alex', 'Sam'])
+    expect(result.observations[0].note).toContain('460 V')
+    expect(result.observations[0].note).toContain('Photo notes')
+  })
   it('keeps every photo and groups by <System>/<Observation>', () => {
     const b1 = bundle(
       'alex',
