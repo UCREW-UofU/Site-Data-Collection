@@ -91,7 +91,7 @@ export function ExportScreen() {
   return (
     <Page
       siteId={siteId}
-      topBar={<TopBar title="Export bundle" back={`/sites/${siteId}/board`} />}
+      topBar={<TopBar title="Export to lead" back={`/sites/${siteId}/dashboard`} />}
     >
       <div className="flex flex-col gap-4">
         <Card className="p-4">
@@ -164,8 +164,8 @@ export function ExportScreen() {
             </>
           ) : (
             <p className="mt-1 text-xs text-[var(--text-3)]">
-              No lead email set for this site. The lead can add one in{' '}
-              <strong>Setup → Site info</strong> and re-share the setup.
+              No lead email set for this site. Add one using the Dashboard's{' '}
+              <strong>site settings → Site info</strong>.
             </p>
           )}
         </Card>

@@ -33,7 +33,7 @@ export function SystemsBoardScreen() {
         <TopBar
           title={site?.name || site?.code || 'Site'}
           subtitle={`${plural(totalObs, 'observation')} · ${plural(totalPhotos, 'photo')}`}
-          back="/"
+          back={`/sites/${siteId}/dashboard`}
           right={
             <Link to={`/sites/${siteId}/setup`} aria-label="Site setup">
               <IconButton>

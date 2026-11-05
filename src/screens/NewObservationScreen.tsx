@@ -81,7 +81,7 @@ export function NewObservationScreen() {
         })
       }
       toast.show(`Saved to ${system?.name ?? 'system'}`)
-      navigate(`/sites/${siteId}/systems/${systemId}`)
+      navigate(`/sites/${siteId}/dashboard`)
     } finally {
       setBusy(false)
     }

@@ -35,7 +35,7 @@ export function SiteSetupScreen() {
   return (
     <Page
       siteId={siteId}
-      topBar={<TopBar title="Setup" subtitle={site?.name || site?.code} back={`/sites/${siteId}/board`} />}
+      topBar={<TopBar title="Setup" subtitle={site?.name || site?.code} back={`/sites/${siteId}/dashboard`} />}
     >
       <Card className="mb-3 p-3 text-sm">
         <div className="flex items-center justify-between">

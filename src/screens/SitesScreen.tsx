@@ -61,7 +61,7 @@ export function SitesScreen() {
         <ul className="flex flex-col gap-2">
           {sites.map((s) => (
             <li key={s.id}>
-              <Link to={`/sites/${s.id}/board`}>
+              <Link to={`/sites/${s.id}/dashboard`}>
                 <Card className="p-3.5 transition hover:border-brand-400">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="truncate font-semibold text-[var(--text)]">
@@ -100,7 +100,7 @@ export function SitesScreen() {
       <CreateSiteSheet
         open={creating}
         onClose={() => setCreating(false)}
-        onCreated={(id) => navigate(`/sites/${id}/board`)}
+        onCreated={(id) => navigate(`/sites/${id}/dashboard`)}
       />
     </Page>
   )

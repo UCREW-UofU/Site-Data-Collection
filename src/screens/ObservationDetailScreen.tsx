@@ -17,6 +17,7 @@ import { CameraIcon, TrashIcon, XIcon } from '@/ui/icons'
 import { useToast } from '@/ui/toast'
 import type { Nameplate } from '@/lib/equipment'
 import { NameplateFields } from '@/ui/NameplateFields'
+import { PhotoViewer } from '@/ui/PhotoViewer'
 
 export function ObservationDetailScreen() {
   const { siteId = '', observationId = '' } = useParams()
@@ -36,6 +37,8 @@ export function ObservationDetailScreen() {
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [viewingPhotoId, setViewingPhotoId] = useState<string | null>(null)
+  const viewingPhoto = photos?.find((photo) => photo.id === viewingPhotoId)
 
   useEffect(() => {
     if (observation && !loaded) {
@@ -50,14 +53,14 @@ export function ObservationDetailScreen() {
 
   if (observation === undefined) {
     return (
-      <Page topBar={<TopBar title="Observation" back={`/sites/${siteId}/board`} />}>
+      <Page topBar={<TopBar title="Observation" back={`/sites/${siteId}/dashboard`} />}>
         <div className="py-16 text-center text-[var(--text-3)]">Loading…</div>
       </Page>
     )
   }
   if (observation === null) {
     return (
-      <Page topBar={<TopBar title="Observation" back={`/sites/${siteId}/board`} />}>
+      <Page topBar={<TopBar title="Observation" back={`/sites/${siteId}/dashboard`} />}>
         <p className="py-16 text-center text-[var(--text-3)]">Not found.</p>
       </Page>
     )
@@ -105,7 +108,7 @@ export function ObservationDetailScreen() {
     try {
       await updateObservation(observationId, { name: name.trim(), location, note: note.trim(), systemId, nameplate })
       toast.show('Saved')
-      navigate(-1)
+      navigate(`/sites/${siteId}/dashboard`)
     } finally {
       setBusy(false)
     }
@@ -115,7 +118,7 @@ export function ObservationDetailScreen() {
     if (!confirm(`Delete "${observation.name}" and its ${photos?.length ?? 0} photo(s)?`)) return
     await deleteObservation(observationId)
     toast.show('Observation deleted')
-    navigate(`/sites/${siteId}/systems/${observation.systemId}`)
+    navigate(`/sites/${siteId}/dashboard`)
   }
 
   const removePhoto = async (id: string) => {
@@ -128,7 +131,7 @@ export function ObservationDetailScreen() {
         <TopBar
           title={observation.name}
           subtitle={`${observation.capturedBy} · ${formatDateTime(observation.updatedAt)}`}
-          back={`/sites/${siteId}/systems/${observation.systemId}`}
+          back={`/sites/${siteId}/dashboard`}
           right={
             <Button variant="ghost" onClick={removeObservation} aria-label="Delete">
               <TrashIcon />
@@ -150,12 +153,10 @@ export function ObservationDetailScreen() {
       <div className="mb-4 flex flex-col gap-3">
         {(photos ?? []).map((p) => (
           <Card key={p.id} className="relative overflow-hidden">
-            <Thumb
-              blob={p.image}
-              className="max-h-[55vh] w-full object-contain"
-              rounded="rounded-2xl"
-              alt=""
-            />
+            <button type="button" onClick={() => setViewingPhotoId(p.id)} className="block w-full text-left" aria-label={`Expand photo ${((photos ?? []).indexOf(p)) + 1} of ${observation.name}`}>
+              <Thumb blob={p.image} className="max-h-[55vh] w-full object-contain" rounded="rounded-2xl" alt={`Photo of ${observation.name}`} />
+              <span className="block px-3 py-2 text-xs text-[var(--text-2)]">Tap photo to expand</span>
+            </button>
             <button
               onClick={() => removePhoto(p.id)}
               className="absolute right-2 top-2 rounded-full bg-black/50 p-1.5 text-white backdrop-blur-sm"
@@ -180,7 +181,7 @@ export function ObservationDetailScreen() {
             'Processing…'
           ) : (
             <>
-              <CameraIcon width={18} height={18} /> Add another photo
+              <CameraIcon width={18} height={18} /> Add photo
             </>
           )}
         </Button>
@@ -222,7 +223,7 @@ export function ObservationDetailScreen() {
       </div>
 
       <div className="sticky bottom-2 mt-5 flex gap-2">
-        <Button variant="ghost" onClick={() => navigate(-1)} disabled={busy}>
+        <Button variant="ghost" onClick={() => navigate(`/sites/${siteId}/dashboard`)} disabled={busy}>
           {dirty ? 'Cancel' : 'Back'}
         </Button>
         <Button
@@ -235,6 +236,7 @@ export function ObservationDetailScreen() {
           {busy ? 'Saving…' : 'Save changes'}
         </Button>
       </div>
+      {viewingPhoto && <PhotoViewer blob={viewingPhoto.image} title={`Photo of ${observation.name}`} onClose={() => setViewingPhotoId(null)} />}
     </Page>
   )
 }
