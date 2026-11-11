@@ -8,7 +8,7 @@ import type { ParsedBundle } from '@/lib/bundle'
 import { normalizeSystemName, type RenameRule } from '@/lib/systems'
 import { Banner, Button, Card, EmptyState, TextField } from '@/ui/kit'
 import { Page, TopBar } from '@/ui/nav'
-import { AlertIcon, MergeIcon, PlusIcon, TrashIcon } from '@/ui/icons'
+import { AlertIcon, MergeIcon } from '@/ui/icons'
 import { useToast } from '@/ui/toast'
 
 function blankSite(): Site {
@@ -211,13 +211,10 @@ export function MergeScreen() {
             <SystemUsageTable
               result={result}
               rules={rules}
-              onAddRule={(from, to) => setRules((r) => [...r, { from, to }])}
-            />
-
-            <RuleEditor
-              rules={rules}
-              systems={result.systemUsage.map((u) => u.system)}
-              onChange={setRules}
+              onAddRule={(from, to) => setRules((previous) => [
+                ...previous.filter((rule) => normalizeSystemName(rule.from) !== normalizeSystemName(from)),
+                ...(to ? [{ from, to }] : []),
+              ])}
             />
 
             <div className="sticky bottom-3">
@@ -320,7 +317,8 @@ function SystemUsageTable({
                   <td className="px-2 py-1.5">
                     <select
                       value={active?.to ?? ''}
-                      onChange={(e) => e.target.value && onAddRule(u.system, e.target.value)}
+                      onChange={(e) => onAddRule(u.system, e.target.value)}
+                      aria-label={`Fold ${u.system} into`}
                       className="rounded border border-[var(--border)] bg-[var(--surface)] px-1 py-0.5 text-xs"
                     >
                       <option value="">—</option>
@@ -341,69 +339,6 @@ function SystemUsageTable({
           </tbody>
         </table>
       </div>
-    </Card>
-  )
-}
-
-function RuleEditor({
-  rules,
-  systems,
-  onChange,
-}: {
-  rules: RenameRule[]
-  systems: string[]
-  onChange: (rules: RenameRule[]) => void
-}) {
-  if (rules.length === 0) return null
-  return (
-    <Card className="p-3">
-      <h2 className="mb-2 text-sm font-semibold">Fold rules</h2>
-      <ul className="flex flex-col gap-2">
-        {rules.map((r, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm">
-            <input
-              value={r.from}
-              onChange={(e) => {
-                const next = [...rules]
-                next[i] = { ...r, from: e.target.value }
-                onChange(next)
-              }}
-              list="merge-systems"
-              className="w-32 rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
-            />
-            <span className="text-[var(--text-3)]">→</span>
-            <input
-              value={r.to}
-              onChange={(e) => {
-                const next = [...rules]
-                next[i] = { ...r, to: e.target.value }
-                onChange(next)
-              }}
-              list="merge-systems"
-              className="w-32 rounded border border-[var(--border)] bg-[var(--surface)] px-2 py-1 text-xs"
-            />
-            <button
-              onClick={() => onChange(rules.filter((_, j) => j !== i))}
-              className="text-[var(--text-3)]"
-              aria-label="Remove rule"
-            >
-              <TrashIcon width={16} height={16} />
-            </button>
-          </li>
-        ))}
-      </ul>
-      <datalist id="merge-systems">
-        {systems.map((t) => (
-          <option key={t} value={t} />
-        ))}
-      </datalist>
-      <Button
-        variant="ghost"
-        className="mt-2 h-9"
-        onClick={() => onChange([...rules, { from: '', to: '' }])}
-      >
-        <PlusIcon width={16} height={16} /> Add rule
-      </Button>
     </Card>
   )
 }

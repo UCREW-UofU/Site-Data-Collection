@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
+import { MultiPhotoCamera } from '@/ui/MultiPhotoCamera'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { equipmentOptions, type Nameplate } from '@/lib/equipment'
-import { NameplateFields } from '@/ui/NameplateFields'
 import { useSystem } from '@/app/queries'
 import { useSettings } from '@/app/settings'
 import { capturePhoto, type CapturedPhoto } from '@/app/capture'
@@ -21,10 +20,8 @@ export function NewObservationScreen() {
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
   const [searchParams] = useSearchParams()
-  const [manual, setManual] = useState(searchParams.get('manual') === '1')
-  const [nameplate, setNameplate] = useState<Nameplate>({ equipmentType: '', values: {} })
-  const [choosingType, setChoosingType] = useState(true)
-  const systemKey = system?.defaultKey || system?.normalizedName.toLowerCase() || ''
+  const manual = searchParams.get('manual') === '1'
+  const [cameraOpen, setCameraOpen] = useState(!manual)
 
   const [photos, setPhotos] = useState<CapturedPhoto[]>([])
   const [name, setName] = useState('')
@@ -32,15 +29,6 @@ export function NewObservationScreen() {
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [processing, setProcessing] = useState(false)
-  const openedOnce = useRef(false)
-
-  // Camera-first: fire the picker as soon as we land here.
-  useEffect(() => {
-    if (!manual && !openedOnce.current) {
-      openedOnce.current = true
-      fileRef.current?.click()
-    }
-  }, [manual])
 
   const onFiles = async (files: FileList) => {
     setProcessing(true)
@@ -64,7 +52,7 @@ export function NewObservationScreen() {
     if (!name.trim() || (!manual && photos.length === 0)) return
     setBusy(true)
     try {
-      const obs = await createObservation({ siteId, systemId, name, location, note, nameplate: manual && nameplate.equipmentType ? nameplate : undefined })
+      const obs = await createObservation({ siteId, systemId, name, location, note })
       for (const shot of photos) {
         await addPhoto({
           observationId: obs.id,
@@ -87,7 +75,7 @@ export function NewObservationScreen() {
     }
   }
 
-  const cancel = () => navigate(`/sites/${siteId}/systems/${systemId}`)
+  const cancel = () => navigate(`/sites/${siteId}/board?mode=${manual ? 'manual' : 'photo'}`)
 
   return (
     <Page
@@ -109,19 +97,7 @@ export function NewObservationScreen() {
         onChange={(e) => e.target.files?.length && onFiles(e.target.files)}
       />
 
-      {manual && choosingType ? (
-        <div className="flex flex-col gap-3">
-          <h1 className="text-lg font-semibold">What type of equipment?</h1>
-          <p className="text-sm text-[var(--text-2)]">Choose a type to get the right nameplate fields.</p>
-          {equipmentOptions(systemKey).map((equipment) => (
-            <Button key={equipment.name} variant="secondary" size="lg" className="w-full" onClick={() => {
-              setNameplate((previous) => ({ ...previous, equipmentType: equipment.name }))
-              setChoosingType(false)
-            }}>{equipment.name}</Button>
-          ))}
-          <Button variant="ghost" onClick={() => nameplate.equipmentType ? setChoosingType(false) : cancel()}>Cancel</Button>
-        </div>
-      ) : photos.length === 0 && !manual ? (
+      {photos.length === 0 && !manual ? (
         <div className="flex flex-col items-center gap-4 py-10">
           {processing ? (
             <div className="flex flex-col items-center gap-3 text-[var(--text-3)]">
@@ -136,11 +112,10 @@ export function NewObservationScreen() {
               <Button
                 variant="primary"
                 size="lg"
-                onClick={() => fileRef.current?.click()}
+                onClick={() => setCameraOpen(true)}
               >
                 <CameraIcon width={20} height={20} /> Take photo
               </Button>
-              <Button variant="secondary" onClick={() => setManual(true)}>Add manually</Button>
               <button className="text-sm text-[var(--text-3)] underline" onClick={cancel}>
                 Cancel
               </button>
@@ -149,10 +124,6 @@ export function NewObservationScreen() {
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          {manual && <div className="flex items-center justify-between gap-3">
-            <h1 className="text-lg font-semibold">{nameplate.equipmentType}</h1>
-            <Button variant="ghost" onClick={() => setChoosingType(true)}>Change type</Button>
-          </div>}
           {(!manual || photos.length > 0) && <div>
             <p className="mb-1.5 text-[13px] font-medium text-[var(--text-2)]">
               {plural(photos.length, 'photo')}
@@ -172,7 +143,7 @@ export function NewObservationScreen() {
                 </div>
               ))}
               <button
-                onClick={() => fileRef.current?.click()}
+                onClick={() => setCameraOpen(true)}
                 className="flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-dashed border-brand-400 text-brand-600"
               >
                 <PlusIcon width={18} height={18} />
@@ -206,8 +177,6 @@ export function NewObservationScreen() {
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
-          {manual && <NameplateFields systemKey={systemKey} value={nameplate} onChange={setNameplate} showType={false} />}
-          {manual && photos.length === 0 && <Button variant="secondary" onClick={() => fileRef.current?.click()}><CameraIcon width={18} height={18} /> Add photo (optional)</Button>}
           <TextArea
             label="Notes"
             placeholder="Equipment purpose and observations"
@@ -232,6 +201,14 @@ export function NewObservationScreen() {
           </div>
         </div>
       )}
+      {cameraOpen && !manual && <MultiPhotoCamera
+        onPhoto={async (file) => {
+          const shot = await capturePhoto(file, settings)
+          setPhotos((previous) => [...previous, { ...shot, capturedAt: new Date(file.lastModified).toISOString() }])
+        }}
+        onDone={() => setCameraOpen(false)}
+        onFallback={() => { setCameraOpen(false); fileRef.current?.click() }}
+      />}
     </Page>
   )
 }

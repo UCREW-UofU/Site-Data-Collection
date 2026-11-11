@@ -6,6 +6,7 @@ import { ToastProvider } from '@/ui/toast'
 import { UpdatePrompt } from '@/app/UpdatePrompt'
 import { SitesScreen } from '@/screens/SitesScreen'
 import { DashboardScreen } from '@/screens/DashboardScreen'
+import { ObservationMethodScreen } from '@/screens/ObservationMethodScreen'
 import { SystemsBoardScreen } from '@/screens/SystemsBoardScreen'
 import { SystemScreen } from '@/screens/SystemScreen'
 import { NewObservationScreen } from '@/screens/NewObservationScreen'
@@ -49,6 +50,7 @@ export default function App() {
                 <Route path="/merge" element={<MergeScreen />} />
                 <Route path="/sites/:siteId" element={<SiteIndexRedirect />} />
                 <Route path="/sites/:siteId/dashboard" element={<DashboardScreen />} />
+                <Route path="/sites/:siteId/observe" element={<ObservationMethodScreen />} />
                 <Route path="/sites/:siteId/board" element={<SystemsBoardScreen />} />
                 <Route path="/sites/:siteId/browse" element={<BrowseScreen />} />
                 <Route path="/sites/:siteId/setup" element={<SiteSetupScreen />} />

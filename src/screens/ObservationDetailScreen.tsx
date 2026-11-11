@@ -18,6 +18,7 @@ import { useToast } from '@/ui/toast'
 import type { Nameplate } from '@/lib/equipment'
 import { NameplateFields } from '@/ui/NameplateFields'
 import { PhotoViewer } from '@/ui/PhotoViewer'
+import { MultiPhotoCamera } from '@/ui/MultiPhotoCamera'
 
 export function ObservationDetailScreen() {
   const { siteId = '', observationId = '' } = useParams()
@@ -37,6 +38,7 @@ export function ObservationDetailScreen() {
   const [loaded, setLoaded] = useState(false)
   const [busy, setBusy] = useState(false)
   const [processing, setProcessing] = useState(false)
+  const [cameraOpen, setCameraOpen] = useState(false)
   const [viewingPhotoId, setViewingPhotoId] = useState<string | null>(null)
   const viewingPhoto = photos?.find((photo) => photo.id === viewingPhotoId)
 
@@ -73,24 +75,22 @@ export function ObservationDetailScreen() {
     JSON.stringify(nameplate) !== JSON.stringify(observation.nameplate) ||
     systemId !== observation.systemId
 
+  const savePhoto = async (file: File) => {
+    const shot = await capturePhoto(file, settings)
+    await addPhoto({
+      observationId,
+      siteId,
+      systemId: observation.systemId,
+      ...shot,
+      capturedAt: shot.capturedAt ?? new Date(file.lastModified).toISOString(),
+    })
+  }
+
   const onFiles = async (files: FileList) => {
     setProcessing(true)
     try {
       for (const file of Array.from(files)) {
-        const shot = await capturePhoto(file, settings)
-        await addPhoto({
-          observationId,
-          siteId,
-          systemId: observation.systemId,
-          image: shot.image,
-          thumb: shot.thumb,
-          original: shot.original,
-          width: shot.width,
-          height: shot.height,
-          decoded: shot.decoded,
-          capturedAt: shot.capturedAt,
-          gps: shot.gps,
-        })
+        await savePhoto(file)
       }
       toast.show('Photo added')
     } catch (err) {
@@ -174,7 +174,7 @@ export function ObservationDetailScreen() {
 
         <Button
           variant="secondary"
-          onClick={() => fileRef.current?.click()}
+          onClick={() => setCameraOpen(true)}
           disabled={processing}
         >
           {processing ? (
@@ -237,6 +237,11 @@ export function ObservationDetailScreen() {
         </Button>
       </div>
       {viewingPhoto && <PhotoViewer blob={viewingPhoto.image} title={`Photo of ${observation.name}`} onClose={() => setViewingPhotoId(null)} />}
+      {cameraOpen && <MultiPhotoCamera
+        onPhoto={async (file) => savePhoto(file)}
+        onDone={() => setCameraOpen(false)}
+        onFallback={() => { setCameraOpen(false); fileRef.current?.click() }}
+      />}
     </Page>
   )
 }

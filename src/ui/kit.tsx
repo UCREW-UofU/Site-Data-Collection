@@ -16,7 +16,7 @@ const VARIANT: Record<Variant, string> = {
   primary:
     'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 disabled:bg-brand-500/50',
   secondary:
-    'bg-[var(--surface-3)] text-[var(--text)] hover:brightness-95 active:brightness-90',
+    'border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-3)] active:brightness-95',
   ghost: 'bg-transparent text-[var(--text-2)] hover:bg-[var(--surface-3)]',
   danger: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
 }
@@ -35,7 +35,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size }) {
   return (
     <button
-      className={`inline-flex select-none items-center justify-center gap-2 rounded-xl font-medium transition disabled:cursor-not-allowed ${VARIANT[variant]} ${SIZE[size]} ${className}`}
+      className={`inline-flex select-none items-center justify-center gap-2 rounded-lg font-semibold transition disabled:cursor-not-allowed ${VARIANT[variant]} ${SIZE[size]} ${className}`}
       {...rest}
     >
       {children}

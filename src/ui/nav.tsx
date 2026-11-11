@@ -23,8 +23,12 @@ export function TopBar({
     else navigate(-1)
   }
   return (
-    <header className="pt-safe sticky top-0 z-30 border-b border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-2">
+    <header className="pt-safe sticky top-0 z-30 border-t-4 border-t-brand-500 border-b border-b-[var(--border)] bg-[var(--surface)]/95 backdrop-blur">
+      <div className="flex min-h-14 items-center gap-2 px-3 sm:gap-4 sm:px-4">
+        <div className="shrink-0 rounded bg-white p-1">
+          <img src="/ucrew-logo.svg" width="193" height="44" alt="U-CREW — The University of Utah" className="h-6 w-auto sm:h-7" />
+        </div>
+        <div className="mx-auto flex min-w-0 max-w-3xl flex-1 items-center gap-1 sm:gap-2">
         {back !== undefined && (
           <IconButton onClick={goBack} aria-label="Back">
             <ChevronLeftIcon />
@@ -39,6 +43,7 @@ export function TopBar({
           )}
         </div>
         {right}
+        </div>
       </div>
     </header>
   )

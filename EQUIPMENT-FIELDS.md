@@ -1,5 +1,12 @@
 # Manual equipment entries
 
+Current flow (2026-11-06): Add manually opens the same Name, Location and Notes
+form used for photo entries, with no photo required. The equipment-type chooser
+and structured fields described below are no longer used for new entries.
+Previously saved structured nameplates remain editable and included in exports.
+
+## Previous structured-entry implementation
+
 Flow: Systems → equipment category → Add manually → equipment type → basic
 nameplate fields → free-text notes. Only the entry name is required. Photos
 can be added later. Every category, including custom categories, has Other

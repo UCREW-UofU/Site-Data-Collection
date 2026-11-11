@@ -307,21 +307,22 @@ export function mergeBundles(bundles: ParsedBundle[], rules: RenameRule[] = []):
 const README = `Site Collect — merged assessment photos
 =======================================
 
-Folders are <System>/<Observation — Location>/ when location is provided,
-or <System>/<Observation>/ when blank. Matching system, equipment name and
+Photos are in extra/<System>/<Observation — Location>/ when location is provided,
+or extra/<System>/<Observation>/ when blank. Matching system, equipment name and
 location combine photos from teammates; different locations stay separate.
 Files are named:
 
   <System>__<Observation>__[<Location>__]<seq>__<person>__<yyyymmdd>.jpg
   (The location segment is omitted when blank.)
 
-index.xlsx
+<Site Name> — Assessment Equipment Log.xlsx (in the main folder)
   - Summary : site info, totals, and every system name used (check the
               "Folded into" column for near-duplicate systems)
   - Equipment : filterable equipment name, Location, notes, and photo folders
   - one tab per system : each observation's name, location, notes, and its photos
                          embedded so you can see them without opening the folder
 
+Supporting files (this README and merge-report.json) are in extra/.
 Drop this whole folder into the Box assessment folder.
 `
 
@@ -334,15 +335,17 @@ export async function buildOutputZip(
     '-',
   )
   const root = zip.folder(code)!
+  const extra = root.folder('extra')!
+  const workbookName = `${safeFolderName(result.site?.name || result.site?.code, 'assessment')} — Assessment Equipment Log.xlsx`
 
   for (const mp of result.photos) {
-    root.file(`${mp.folder}/${mp.filename}`, mp.image)
+    extra.file(`${mp.folder}/${mp.filename}`, await mp.image.arrayBuffer())
   }
 
   const wb = await buildIndexWorkbook(result)
-  root.file('index.xlsx', wb)
-  root.file('README.txt', README)
-  root.file(
+  root.file(workbookName, await wb.arrayBuffer())
+  extra.file('README.txt', README)
+  extra.file(
     'merge-report.json',
     JSON.stringify(
       {
@@ -351,7 +354,7 @@ export async function buildOutputZip(
         totals: result.totals,
         bundles: result.bundles,
         systemUsage: result.systemUsage,
-        observations: result.observations,
+        observations: result.observations.map((observation) => ({ ...observation, folder: `extra/${observation.folder}` })),
       },
       null,
       2,

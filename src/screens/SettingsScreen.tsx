@@ -40,7 +40,7 @@ export function SettingsScreen() {
               label="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Creed McCord"
+            placeholder="First and last name"
             />
             <TextField
               label="Email (optional)"

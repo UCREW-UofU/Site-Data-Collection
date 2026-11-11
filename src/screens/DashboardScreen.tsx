@@ -22,7 +22,7 @@ export function DashboardScreen() {
       <Link to={`/sites/${siteId}/setup`} aria-label="Site settings"><IconButton><SettingsIcon /></IconButton></Link>
     } />}>
       <div className="mb-6 grid gap-3 sm:grid-cols-2">
-        <Button variant="primary" size="lg" onClick={() => navigate(`/sites/${siteId}/board`)}><PlusIcon width={20} height={20} /> Make observation</Button>
+        <Button variant="primary" size="lg" onClick={() => navigate(`/sites/${siteId}/observe`)}><PlusIcon width={20} height={20} /> Make observation</Button>
         <Button variant="secondary" size="lg" onClick={() => navigate(`/sites/${siteId}/export`)}><ExportIcon width={20} height={20} /> Export to lead</Button>
       </div>
       <div className="mb-3 flex items-center justify-between gap-3">

@@ -74,7 +74,7 @@ export async function buildIndexWorkbook(result: MergeResult): Promise<Blob> {
   equipment.views = [{ state: 'frozen', ySplit: 1 }]
   equipment.autoFilter = 'A1:G1'
   for (const o of result.observations) {
-    equipment.addRow({ ...o, location: o.location || '', contributors: o.contributors.join(', ') })
+    equipment.addRow({ ...o, folder: `extra/${o.folder}`, location: o.location || '', contributors: o.contributors.join(', ') })
   }
   equipment.eachRow((r) => { r.alignment = { wrapText: true, vertical: 'top' } })
 

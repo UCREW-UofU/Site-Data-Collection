@@ -1,42 +1,45 @@
 @import 'tailwindcss';
 
 /*
-  Design tokens. Kept deliberately small: a slate neutral ramp with an amber
-  primary (the "capture" action). Works in bright mechanical rooms and dark ones.
+  U-CREW-inspired palette from energy.utah.edu: Utah red, black, white and
+  neutral gray. System fonts keep the field app independent of online fonts.
 */
 @theme {
-  --color-brand-50: #fff7ed;
-  --color-brand-100: #ffedd5;
-  --color-brand-400: #fb923c;
-  --color-brand-500: #f59e0b;
-  --color-brand-600: #d97706;
-  --color-brand-700: #b45309;
+  --color-brand-50: #fff1f1;
+  --color-brand-100: #ffdcdc;
+  --color-brand-400: #e54b4b;
+  --color-brand-500: #be0000;
+  --color-brand-600: #a60000;
+  --color-brand-700: #860000;
 
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial,
     sans-serif;
+  --font-display: Rockwell, 'Roboto Slab', Georgia, serif;
 }
 
 :root {
   color-scheme: light dark;
 
   --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
-  --border: #cbd5e1;
-  --text: #0f172a;
-  --text-2: #475569;
-  --text-3: #64748b;
+  --surface-2: #f7f8f8;
+  --surface-3: #eef0f0;
+  --border: #d9dede;
+  --text: #181818;
+  --text-2: #414a4b;
+  --text-3: #5d6868;
+  --brand-ink: #a60000;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --surface: #0f172a;
-    --surface-2: #1e293b;
-    --surface-3: #334155;
-    --border: #334155;
-    --text: #f1f5f9;
-    --text-2: #cbd5e1;
-    --text-3: #94a3b8;
+    --surface: #202020;
+    --surface-2: #141414;
+    --surface-3: #303030;
+    --border: #454545;
+    --text: #fafafa;
+    --text-2: #dedede;
+    --text-3: #b2baba;
+    --brand-ink: #ff9292;
   }
 }
 
@@ -64,6 +67,19 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* Keep red labels readable in both light and dark modes. */
+.text-brand-600 { color: var(--brand-ink); }
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--brand-ink);
+  outline-offset: 3px;
 }
 
 /* Utility: honour device safe areas (notch / home indicator). */

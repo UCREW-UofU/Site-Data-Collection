@@ -22,7 +22,7 @@ try {
 const svg = await readFile(svgPath)
 await mkdir(outDir, { recursive: true })
 
-const bg = { r: 15, g: 23, b: 42, alpha: 1 } // #0f172a
+const bg = { r: 23, g: 23, b: 23, alpha: 1 } // #171717
 
 async function render(size, { maskable = false } = {}) {
   const inner = maskable ? Math.round(size * 0.8) : size

@@ -12,14 +12,14 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'ucrew-logo.svg'],
       manifest: {
-        name: 'Site Collect — Field Equipment Photos',
-        short_name: 'SiteCollect',
+        name: 'U-CREW — Site Collection',
+        short_name: 'U-CREW',
         description:
           'Offline capture and tagging of equipment nameplate photos for energy assessments.',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        theme_color: '#be0000',
+        background_color: '#171717',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',

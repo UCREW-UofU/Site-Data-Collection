@@ -43,6 +43,16 @@ handling, storage limits, PWA install).
 
 ## Develop
 
+Photo entry opens an in-app camera: take multiple shots, then tap **Done** to
+return to the entry. The same camera is used when adding photos to an existing
+entry. Camera access requires permission and HTTPS (or localhost). If unavailable,
+use **Use phone camera / choose photos** for the existing file-picker workflow.
+Shots are captured from the camera video stream and processed locally; maximum
+resolution, autofocus and detail vary by browser/device. For difficult nameplates,
+the native camera may give better results. New-entry photos are saved with the
+observation; photos added to an existing entry are saved as each shot completes.
+Real-device iPhone/Android camera quality and permission behavior still need QA.
+
 ```bash
 npm install
 npm run dev        # http://localhost:5173

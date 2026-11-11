@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { BundleManifest, BundlePhoto, ParsedBundle } from './bundle'
 import type { Observation, Site, System } from '@/db/types'
-import { mergeBundles } from './merge'
+import { buildOutputZip, mergeBundles } from './merge'
+import JSZip from 'jszip'
 import { buildIndexWorkbook } from './xlsx'
 import ExcelJS from 'exceljs'
 
@@ -85,6 +86,23 @@ function bundle(
 }
 
 describe('mergeBundles', () => {
+  it('keeps only the site-named workbook and extra folder at the output root', async () => {
+    const result = mergeBundles([bundle('alex', [sys('Cooling')], [obs('o1', 'Cooling', 'Pump 1', 'Alex', 'Test notes')], [photo('p1', 'o1')])])
+    result.site = { ...site, name: 'Demo / Site' }
+    const { blob } = await buildOutputZip(result)
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer())
+    const prefix = `${site.code}/`
+    const children = Object.keys(zip.files).filter((path) => path.startsWith(prefix) && path !== prefix).map((path) => path.slice(prefix.length).split('/')[0])
+    expect([...new Set(children)].sort()).toEqual(['Demo Site — Assessment Equipment Log.xlsx', 'extra'])
+    expect(zip.file(`${prefix}extra/README.txt`)).not.toBeNull()
+    const photoPath = `extra/${result.photos[0].folder}/${result.photos[0].filename}`
+    expect(await zip.file(`${prefix}${photoPath}`)!.async('string')).toBe('x')
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.load(await zip.file(`${prefix}Demo Site — Assessment Equipment Log.xlsx`)!.async('arraybuffer'))
+    expect(workbook.getWorksheet('Equipment')?.getCell('G2').value).toBe('extra/Cooling/Pump 1')
+    const report = JSON.parse(await zip.file(`${prefix}extra/merge-report.json`)!.async('string'))
+    expect(report.observations[0].folder).toBe('extra/Cooling/Pump 1')
+  })
   it('retains photo-free nameplates, notes and attribution in the merged spreadsheet', async () => {
     const manual = {
       ...obs('manual', 'Cooling', 'Chiller 1', 'Alex', 'Unable to take a photo'),
