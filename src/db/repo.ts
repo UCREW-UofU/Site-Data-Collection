@@ -61,6 +61,13 @@ export async function ensureDefaultSystems(siteId: string): Promise<void> {
   const createdBy = await who()
   await db.transaction('rw', db.systems, async () => {
     const existing = await db.systems.where('siteId').equals(siteId).toArray()
+    // Retire this default on existing sites without deleting its observations
+    // or photos. The Dashboard still links to all previously recorded entries.
+    for (const system of existing) {
+      if (system.defaultKey === 'motors-pumps' && system.active) {
+        await db.systems.update(system.id, { active: false })
+      }
+    }
     const haveKeys = new Set(existing.map((s) => s.defaultKey).filter(Boolean))
     let order = existing.length
     for (let i = 0; i < DEFAULT_SYSTEMS.length; i++) {

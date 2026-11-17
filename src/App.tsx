@@ -6,7 +6,6 @@ import { ToastProvider } from '@/ui/toast'
 import { UpdatePrompt } from '@/app/UpdatePrompt'
 import { SitesScreen } from '@/screens/SitesScreen'
 import { DashboardScreen } from '@/screens/DashboardScreen'
-import { ObservationMethodScreen } from '@/screens/ObservationMethodScreen'
 import { SystemsBoardScreen } from '@/screens/SystemsBoardScreen'
 import { SystemScreen } from '@/screens/SystemScreen'
 import { NewObservationScreen } from '@/screens/NewObservationScreen'
@@ -24,9 +23,9 @@ const MergeScreen = lazy(() =>
   import('@/screens/MergeScreen').then((m) => ({ default: m.MergeScreen })),
 )
 
-function SiteIndexRedirect() {
+function SiteIndexRedirect({ to = 'dashboard' }: { to?: 'dashboard' | 'board' }) {
   const { siteId } = useParams()
-  return <Navigate to={`/sites/${siteId}/dashboard`} replace />
+  return <Navigate to={`/sites/${siteId}/${to}`} replace />
 }
 
 function Loading() {
@@ -50,7 +49,7 @@ export default function App() {
                 <Route path="/merge" element={<MergeScreen />} />
                 <Route path="/sites/:siteId" element={<SiteIndexRedirect />} />
                 <Route path="/sites/:siteId/dashboard" element={<DashboardScreen />} />
-                <Route path="/sites/:siteId/observe" element={<ObservationMethodScreen />} />
+                <Route path="/sites/:siteId/observe" element={<SiteIndexRedirect to="board" />} />
                 <Route path="/sites/:siteId/board" element={<SystemsBoardScreen />} />
                 <Route path="/sites/:siteId/browse" element={<BrowseScreen />} />
                 <Route path="/sites/:siteId/setup" element={<SiteSetupScreen />} />

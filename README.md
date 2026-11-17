@@ -43,7 +43,9 @@ handling, storage limits, PWA install).
 
 ## Develop
 
-Photo entry opens an in-app camera: take multiple shots, then tap **Done** to
+**Make observation → Choose system → Observation form.** Start with name,
+location and notes, and optionally tap **Add photos** to open the in-app camera.
+An entry can be saved without photos. Take multiple shots, then tap **Done** to
 return to the entry. The same camera is used when adding photos to an existing
 entry. Camera access requires permission and HTTPS (or localhost). If unavailable,
 use **Use phone camera / choose photos** for the existing file-picker workflow.

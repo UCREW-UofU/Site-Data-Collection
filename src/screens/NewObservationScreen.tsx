@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { MultiPhotoCamera } from '@/ui/MultiPhotoCamera'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useSystem } from '@/app/queries'
 import { useSettings } from '@/app/settings'
 import { capturePhoto, type CapturedPhoto } from '@/app/capture'
@@ -9,19 +9,19 @@ import { plural } from '@/lib/format'
 import { Banner, Button, TextArea, TextField } from '@/ui/kit'
 import { Page, TopBar } from '@/ui/nav'
 import { Thumb } from '@/ui/Thumb'
-import { AlertIcon, CameraIcon, PlusIcon, XIcon } from '@/ui/icons'
+import { AlertIcon, CameraIcon, XIcon } from '@/ui/icons'
 import { useToast } from '@/ui/toast'
+import { systemObservationExample } from '@/lib/systems'
 
 export function NewObservationScreen() {
   const { siteId = '', systemId = '' } = useParams()
   const system = useSystem(systemId)
+  const nameExample = systemObservationExample(system)
   const { settings } = useSettings()
   const toast = useToast()
   const navigate = useNavigate()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [searchParams] = useSearchParams()
-  const manual = searchParams.get('manual') === '1'
-  const [cameraOpen, setCameraOpen] = useState(!manual)
+  const [cameraOpen, setCameraOpen] = useState(false)
 
   const [photos, setPhotos] = useState<CapturedPhoto[]>([])
   const [name, setName] = useState('')
@@ -49,7 +49,7 @@ export function NewObservationScreen() {
   const removeAt = (i: number) => setPhotos((p) => p.filter((_, j) => j !== i))
 
   const save = async () => {
-    if (!name.trim() || (!manual && photos.length === 0)) return
+    if (!name.trim() || processing || busy) return
     setBusy(true)
     try {
       const obs = await createObservation({ siteId, systemId, name, location, note })
@@ -75,7 +75,7 @@ export function NewObservationScreen() {
     }
   }
 
-  const cancel = () => navigate(`/sites/${siteId}/board?mode=${manual ? 'manual' : 'photo'}`)
+  const cancel = () => navigate(`/sites/${siteId}/board`)
 
   return (
     <Page
@@ -97,34 +97,11 @@ export function NewObservationScreen() {
         onChange={(e) => e.target.files?.length && onFiles(e.target.files)}
       />
 
-      {photos.length === 0 && !manual ? (
-        <div className="flex flex-col items-center gap-4 py-10">
-          {processing ? (
-            <div className="flex flex-col items-center gap-3 text-[var(--text-3)]">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
-              Processing photo…
-            </div>
-          ) : (
-            <>
-              <p className="text-center text-sm text-[var(--text-3)]">
-                Take at least one photo to start this observation.
-              </p>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => setCameraOpen(true)}
-              >
-                <CameraIcon width={20} height={20} /> Take photo
-              </Button>
-              <button className="text-sm text-[var(--text-3)] underline" onClick={cancel}>
-                Cancel
-              </button>
-            </>
-          )}
-        </div>
-      ) : (
         <div className="flex flex-col gap-4">
-          {(!manual || photos.length > 0) && <div>
+          <Button variant="primary" size="lg" onClick={() => setCameraOpen(true)} disabled={processing || busy}>
+            <CameraIcon width={20} height={20} /> {processing ? 'Processing photos…' : 'Add photos'}
+          </Button>
+          {photos.length > 0 && <div>
             <p className="mb-1.5 text-[13px] font-medium text-[var(--text-2)]">
               {plural(photos.length, 'photo')}
               {processing && ' · processing…'}
@@ -142,13 +119,6 @@ export function NewObservationScreen() {
                   </button>
                 </div>
               ))}
-              <button
-                onClick={() => setCameraOpen(true)}
-                className="flex aspect-square flex-col items-center justify-center gap-0.5 rounded-lg border-2 border-dashed border-brand-400 text-brand-600"
-              >
-                <PlusIcon width={18} height={18} />
-                <span className="text-[10px] leading-none">Add</span>
-              </button>
             </div>
           </div>}
 
@@ -164,8 +134,8 @@ export function NewObservationScreen() {
 
           <TextField
             label="Name"
-            hint="The equipment, e.g. “Chiller 1”, “CHW Pump 2”, “Main air compressor”"
-            placeholder="Chiller 1"
+            hint={`Name the equipment, e.g. “${nameExample}”.`}
+            placeholder={nameExample}
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
@@ -193,15 +163,14 @@ export function NewObservationScreen() {
               variant="primary"
               size="lg"
               className="flex-1"
-              disabled={busy || processing || !name.trim() || (!manual && photos.length === 0)}
+              disabled={busy || processing || !name.trim()}
               onClick={save}
             >
               {busy ? 'Saving…' : 'Save observation'}
             </Button>
           </div>
         </div>
-      )}
-      {cameraOpen && !manual && <MultiPhotoCamera
+      {cameraOpen && <MultiPhotoCamera
         onPhoto={async (file) => {
           const shot = await capturePhoto(file, settings)
           setPhotos((previous) => [...previous, { ...shot, capturedAt: new Date(file.lastModified).toISOString() }])

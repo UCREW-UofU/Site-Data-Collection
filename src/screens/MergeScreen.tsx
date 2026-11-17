@@ -223,7 +223,7 @@ export function MergeScreen() {
                 size="lg"
                 className="w-full shadow-lg"
                 onClick={generate}
-                disabled={building || result.totals.photos === 0 || !canGenerate}
+                disabled={building || result.totals.observations === 0 || !canGenerate}
               >
                 {building
                   ? 'Building…'

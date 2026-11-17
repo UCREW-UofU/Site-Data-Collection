@@ -19,7 +19,7 @@ import { PlusIcon, TrashIcon } from '@/ui/icons'
 export function SiteSetupScreen() {
   const { siteId = '' } = useParams()
   const site = useSite(siteId)
-  const systems = useSystems(siteId)
+  const systems = useSystems(siteId)?.filter((system) => system.defaultKey !== 'motors-pumps')
   const counts = useCountsBySystem(siteId)
   const [adding, setAdding] = useState(false)
   const [renaming, setRenaming] = useState<System | null>(null)

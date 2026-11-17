@@ -5,7 +5,7 @@ import { formatDateTime, plural } from '@/lib/format'
 import { Button, Card, EmptyState } from '@/ui/kit'
 import { Page, TopBar } from '@/ui/nav'
 import { Thumb } from '@/ui/Thumb'
-import { CameraIcon, GridIcon } from '@/ui/icons'
+import { PlusIcon, GridIcon } from '@/ui/icons'
 
 export function SystemScreen() {
   const { siteId = '', systemId = '' } = useParams()
@@ -33,15 +33,12 @@ export function SystemScreen() {
         className="mb-4 w-full"
         onClick={() => navigate(`/sites/${siteId}/systems/${systemId}/new`)}
       >
-        <CameraIcon width={20} height={20} /> Take photo
-      </Button>
-      <Button variant="secondary" size="lg" className="mb-4 w-full" onClick={() => navigate(`/sites/${siteId}/systems/${systemId}/new?manual=1`)}>
-        Add manually
+        <PlusIcon width={20} height={20} /> Make observation
       </Button>
 
       {observations === undefined ? null : observations.length === 0 ? (
         <EmptyState icon={<GridIcon width={40} height={40} />} title="No observations yet">
-          Take a photo or add equipment information manually.
+          Make an observation. Photos are optional.
         </EmptyState>
       ) : (
         <ul className="flex flex-col gap-2">

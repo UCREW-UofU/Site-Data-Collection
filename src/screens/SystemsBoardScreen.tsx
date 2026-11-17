@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useCountsBySystem, useObservations, useSite, useSystems } from '@/app/queries'
 import { useSettings } from '@/app/settings'
 import { createSystem, ensureDefaultSystems } from '@/db/repo'
@@ -11,10 +11,7 @@ import { AlertIcon, ChevronRightIcon, PlusIcon, SettingsIcon, TagIcon } from '@/
 
 export function SystemsBoardScreen() {
   const { siteId = '' } = useParams()
-  const [searchParams] = useSearchParams()
-  const mode = searchParams.get('mode')
-  const choosingSystem = mode === 'manual' || mode === 'photo'
-  const systemDestination = (id: string) => `/sites/${siteId}/systems/${id}${choosingSystem ? `/new${mode === 'manual' ? '?manual=1' : ''}` : ''}`
+  const systemDestination = (id: string) => `/sites/${siteId}/systems/${id}/new`
   const site = useSite(siteId)
   const systems = useSystems(siteId)
   const counts = useCountsBySystem(siteId)
@@ -37,7 +34,7 @@ export function SystemsBoardScreen() {
         <TopBar
           title={site?.name || site?.code || 'Site'}
           subtitle={`${plural(totalObs, 'observation')} · ${plural(totalPhotos, 'photo')}`}
-          back={`/sites/${siteId}/${choosingSystem ? 'observe' : 'dashboard'}`}
+          back={`/sites/${siteId}/dashboard`}
           right={
             <Link to={`/sites/${siteId}/setup`} aria-label="Site setup">
               <IconButton>
@@ -61,7 +58,7 @@ export function SystemsBoardScreen() {
       )}
 
       <div className="mb-2 mt-3 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">{choosingSystem ? 'Choose a system' : 'Systems'}</h1>
+        <h1 className="text-lg font-semibold">Choose a system</h1>
       </div>
 
       {systems === undefined ? null : active.length === 0 ? (

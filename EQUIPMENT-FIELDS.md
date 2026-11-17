@@ -1,5 +1,10 @@
 # Manual equipment entries
 
+Current flow (2026-11-17): All observations use one form after choosing a system.
+Photos are optional; there is no separate manual/photo method screen. The camera
+opens only when Add photos is tapped. Motors & Pumps is retired as a default;
+existing entries remain accessible from the Dashboard.
+
 Current flow (2026-11-06): Add manually opens the same Name, Location and Notes
 form used for photo entries, with no photo required. The equipment-type chooser
 and structured fields described below are no longer used for new entries.
